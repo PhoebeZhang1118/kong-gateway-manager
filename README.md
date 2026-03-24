@@ -1,26 +1,26 @@
-# Kong Manager E2E 测试项目
+# Kong Manager E2E Test Project
 
-基于 Cypress 的端到端（E2E）自动化测试框架，用于测试 Kong Manager 的 Gateway Services 和 Routes 功能。
+An end-to-end (E2E) automation testing framework based on Cypress for testing Kong Manager's Gateway Services and Routes functionality.
 
 ---
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 cypress/
-├── e2e/                          # 测试用例目录
+├── e2e/                          # Test cases directory
 │   └── tests/
-│       ├── e2e-workflows/        # 端到端完整流程测试
+│       ├── e2e-workflows/        # End-to-end complete workflow tests
 │       │   └── service-and-route.cy.ts
-│       ├── gateway-services/     # Gateway Service 相关测试
+│       ├── gateway-services/     # Gateway Service related tests
 │       │   ├── create.cy.ts
 │       │   └── navigation.cy.ts
-│       └── routes/               # Route 相关测试
+│       └── routes/               # Route related tests
 │           ├── create.cy.ts
 │           └── navigation.cy.ts
 ├── pages/                        # Page Object Model (POM)
 │   ├── base/
-│   │   └── BasePage.ts           # 所有 Page 类的基类
+│   │   └── BasePage.ts           # Base class for all Page classes
 │   ├── gateway-service/
 │   │   ├── GatewayServiceFormPage.ts
 │   │   ├── GatewayServicesListPage.ts
@@ -33,59 +33,59 @@ cypress/
 │       ├── OverviewPage.ts
 │       ├── WorkspacesPage.ts
 │       └── index.ts
-└── support/                      # 测试支持文件
+└── support/                      # Test support files
     └── e2e.ts
 ```
 
 ---
 
-## 🏗️ 各层作用说明
+## 🏗️ Layer Descriptions
 
-### 1. `cypress/e2e/tests/` - 测试层
-存放所有测试用例，按功能模块组织：
+### 1. `cypress/e2e/tests/` - Test Layer
+Contains all test cases, organized by functional modules:
 
-| 目录 | 说明 | 示例 |
-|------|------|------|
-| `e2e-workflows/` | 端到端完整流程测试 | 创建 Service → 添加 Route → 验证代理 |
-| `gateway-services/` | Gateway Service 功能测试 | 创建、导航、表单验证 |
-| `routes/` | Route 功能测试 | 创建 Route、重复名称验证 |
+| Directory | Description | Example |
+|-----------|-------------|---------|
+| `e2e-workflows/` | End-to-end complete workflow tests | Create Service → Add Route → Verify Proxy |
+| `gateway-services/` | Gateway Service functional tests | Create, Navigate, Form validation |
+| `routes/` | Route functional tests | Create Route, Duplicate name validation |
 
-### 2. `cypress/pages/` - Page Object 层
-使用 Page Object Model 模式封装页面元素和操作：
+### 2. `cypress/pages/` - Page Object Layer
+Encapsulates page elements and operations using the Page Object Model pattern:
 
-| 文件 | 职责 |
-|------|------|
-| `BasePage.ts` | 提供通用方法：`visit()`、`waitForPageLoad()`、`urlShouldContain()` 等 |
-| `*Page.ts` | 每个页面对应一个类，封装该页面的选择器（selectors）和操作方法 |
-| `index.ts` | 模块导出文件，方便批量导入 |
+| File | Responsibility |
+|------|----------------|
+| `BasePage.ts` | Provides common methods: `visit()`, `waitForPageLoad()`, `urlShouldContain()`, etc. |
+| `*Page.ts` | Each page corresponds to a class, encapsulating selectors and operation methods |
+| `index.ts` | Module export file for convenient batch imports |
 
-**设计原则：**
-- 选择器集中定义在 `selectors` 对象中
-- 操作方法命名清晰：`clickXXX()`、`verifyXXX()`、`enterXXX()`
-- 返回 Cypress Chainable 以便链式调用
+**Design Principles:**
+- Selectors are centrally defined in the `selectors` object
+- Operation methods have clear names: `clickXXX()`, `verifyXXX()`, `enterXXX()`
+- Return Cypress Chainable for chaining calls
 
-### 3. `cypress/support/` - 支持层
-存放测试辅助文件：
-- `e2e.ts`: 全局 before/after hooks、自定义命令
+### 3. `cypress/support/` - Support Layer
+Contains test auxiliary files:
+- `e2e.ts`: Global before/after hooks, custom commands
 
 ---
 
-## ➕ 如何添加新文件
+## ➕ How to Add New Files
 
-### 添加新的 Page 文件
+### Adding a New Page File
 
-1. **在 `cypress/pages/` 下创建文件**
+1. **Create a file under `cypress/pages/`**
    ```
    cypress/pages/new-module/NewFeaturePage.ts
    ```
 
-2. **继承 BasePage 并定义选择器**
+2. **Extend BasePage and define selectors**
    ```typescript
    import { BasePage } from '../base/BasePage';
 
    export class NewFeaturePage extends BasePage {
      readonly selectors = {
-       // 使用 data-testid 优先
+       // Prioritize using data-testid
        featureInput: '[data-testid="feature-input"]',
        submitButton: '[data-testid="submit-btn"]',
      };
@@ -94,7 +94,7 @@ cypress/
        super('http://localhost:8002/default/feature');
      }
 
-     // 操作方法
+     // Operation methods
      enterFeatureName(name: string): void {
        cy.get(this.selectors.featureInput).clear().type(name);
      }
@@ -105,25 +105,25 @@ cypress/
    }
    ```
 
-3. **在 `index.ts` 中导出**
+3. **Export in `index.ts`**
    ```typescript
    // cypress/pages/new-module/index.ts
    export { NewFeaturePage } from './NewFeaturePage';
    ```
 
-4. **在 `cypress/pages/index.ts` 中注册模块**
+4. **Register the module in `cypress/pages/index.ts`**
    ```typescript
    export * from './new-module';
    ```
 
-### 添加新的测试文件
+### Adding a New Test File
 
-1. **在相应目录创建 `.cy.ts` 文件**
+1. **Create a `.cy.ts` file in the appropriate directory**
    ```
    cypress/e2e/tests/new-module/feature.cy.ts
    ```
 
-2. **编写测试结构**
+2. **Write the test structure**
    ```typescript
    import { WorkspacesPage } from '../../../pages/workspace/WorkspacesPage';
    import { NewFeaturePage } from '../../../pages/new-module/NewFeaturePage';
@@ -138,192 +138,192 @@ cypress/
      });
 
      it('should test something', () => {
-       // 测试步骤
+       // Test steps
        newFeaturePage.enterFeatureName('test');
        newFeaturePage.clickSubmit();
        
-       // 断言
+       // Assertions
        cy.contains('Success').should('be.visible');
      });
    });
    ```
 
-3. **在 `cypress.config.ts` 中注册（如需要）**
+3. **Register in `cypress.config.ts` (if needed)**
    ```typescript
    specPattern: [
      "cypress/e2e/tests/gateway-services/**/*.cy.ts",
      "cypress/e2e/tests/routes/**/*.cy.ts",
-     "cypress/e2e/tests/new-module/**/*.cy.ts",  // 添加新行
+     "cypress/e2e/tests/new-module/**/*.cy.ts",  // Add new line
    ],
    ```
 
 ---
 
-## 🚀 执行测试的方式
+## 🚀 How to Run Tests
 
-### 1. 打开 Cypress 测试运行器（推荐开发使用）
+### 1. Open Cypress Test Runner (Recommended for development)
 ```bash
 npx cypress open
 ```
-- 可视化选择并运行测试
-- 支持调试和查看实时执行
+- Visually select and run tests
+- Supports debugging and viewing real-time execution
 
-### 2. 命令行运行所有测试
+### 2. Run all tests in command line
 ```bash
 npx cypress run
 ```
 
-### 3. 运行特定测试文件
+### 3. Run specific test file
 ```bash
 npx cypress run --spec "cypress/e2e/tests/routes/create.cy.ts"
 ```
 
-### 4. 运行特定目录的测试
+### 4. Run tests in specific directory
 ```bash
 npx cypress run --spec "cypress/e2e/tests/routes/**/*.cy.ts"
 ```
 
-### 5. 指定浏览器运行
+### 5. Run with specific browser
 ```bash
 npx cypress run --browser chrome
 npx cypress run --browser edge
 ```
 
-### 6. 无头模式（CI/CD 使用）
+### 6. Headless mode (for CI/CD)
 ```bash
 npx cypress run --headless
 ```
 
-### 7. 运行特定测试（使用 grep）
+### 7. Run specific tests (using grep)
 ```bash
-# 运行包含 "create" 的测试
+# Run tests containing "create"
 npx cypress run --env grep="create"
 ```
 
 ---
 
-## 📝 编写测试的最佳实践
+## 📝 Best Practices for Writing Tests
 
-### 1. 选择器规范
-- **优先使用 `data-testid`**：稳定且不易因 UI 变更而失效
+### 1. Selector Standards
+- **Prioritize using `data-testid`**: Stable and less likely to break due to UI changes
   ```typescript
-  // ✅ 推荐
+  // ✅ Recommended
   myInput: '[data-testid="route-form-name"]'
   
-  // ❌ 不推荐
+  // ❌ Not recommended
   myInput: '.form-control input[type="text"]'
   ```
 
-### 2. 等待策略
-- 使用 Cypress 的自动等待机制
-- 必要时添加显式等待：
+### 2. Waiting Strategies
+- Use Cypress's automatic waiting mechanism
+- Add explicit waits when necessary:
   ```typescript
-  cy.wait(500);  // 等待页面过渡
+  cy.wait(500);  // Wait for page transition
   cy.get('[data-testid="element"]', { timeout: 10000 }).should('be.visible');
   ```
 
-### 3. 条件测试
-- 使用 `.then()` 处理异步结果
+### 3. Conditional Testing
+- Use `.then()` to handle asynchronous results
   ```typescript
   gatewayServicesList.hasEnabledService().then((hasEnabled) => {
     if (hasEnabled) {
-      // 执行操作
+      // Perform actions
     } else {
       cy.log('No enabled services found');
     }
   });
   ```
 
-### 4. 生成随机数据
-- 使用 Page 类提供的随机数据生成方法
+### 4. Generating Random Data
+- Use the random data generation method provided by the Page class
   ```typescript
   const routeName = createRoutePage.generateRouteName();
-  // 结果: phoebe-example-route-XXX
+  // Result: phoebe-example-route-XXX
   ```
 
-### 5. 跳过不稳定的测试
-- 使用 `it.skip()` 临时跳过
-- 使用 `it.only()` 只运行特定测试
+### 5. Skipping Unstable Tests
+- Use `it.skip()` to temporarily skip
+- Use `it.only()` to run only specific tests
 
 ---
 
-## ⚙️ 配置说明
+## ⚙️ Configuration
 
-### Cypress 配置 (`cypress.config.ts`)
+### Cypress Configuration (`cypress.config.ts`)
 
-| 配置项 | 说明 | 当前值 |
-|--------|------|--------|
-| `baseUrl` | 测试的基础 URL | `http://localhost:8002` |
-| `viewportWidth` | 视口宽度 | `1280` |
-| `viewportHeight` | 视口高度 | `720` |
-| `video` | 是否录制视频 | `true` |
-| `screenshotOnRunFailure` | 失败时截图 | `true` |
-| `specPattern` | 测试文件匹配模式 | 见配置文件 |
+| Config Item | Description | Current Value |
+|-------------|-------------|---------------|
+| `baseUrl` | Base URL for tests | `http://localhost:8002` |
+| `viewportWidth` | Viewport width | `1280` |
+| `viewportHeight` | Viewport height | `720` |
+| `video` | Record video | `true` |
+| `screenshotOnRunFailure` | Screenshot on failure | `true` |
+| `specPattern` | Test file patterns | See config file |
 
-### TypeScript 配置
-- 项目使用 TypeScript 编写
-- 运行前会执行类型检查：`npx tsc --noEmit`
+### TypeScript Configuration
+- Project uses TypeScript
+- Type check before running: `npx tsc --noEmit`
 
 ---
 
-## 🔧 环境要求
+## 🔧 Environment Requirements
 
 - **Node.js**: >= 16.x
 - **Cypress**: ^15.12.0
 - **TypeScript**: ^5.9.3
 
-### 安装依赖
+### Install Dependencies
 ```bash
 npm install
 ```
 
 ---
 
-## 📊 测试报告
+## 📊 Test Reports
 
-### 视频和截图
-- **视频**: 保存在 `cypress/videos/`
-- **失败截图**: 自动保存在 `cypress/screenshots/`
+### Videos and Screenshots
+- **Videos**: Saved in `cypress/videos/`
+- **Failure Screenshots**: Automatically saved in `cypress/screenshots/`
 
-### 查看结果
+### View Results
 ```bash
-# 运行测试后查看
+# After running tests
 ls cypress/videos/
 ls cypress/screenshots/
 ```
 
 ---
 
-## 🐛 常见问题
+## 🐛 Common Issues
 
-### 1. 元素找不到
-- 检查 `data-testid` 是否正确
-- 添加适当的等待时间
-- 使用 `{ timeout: 10000 }` 增加超时
+### 1. Element not found
+- Check if `data-testid` is correct
+- Add appropriate wait time
+- Use `{ timeout: 10000 }` to increase timeout
 
-### 2. 测试不稳定
-- 确保页面完全加载后再操作
-- 使用 `cy.wait()` 等待 API 响应
-- 避免硬编码的等待时间，优先使用 Cypress 的自动等待
+### 2. Unstable tests
+- Ensure the page is fully loaded before operating
+- Use `cy.wait()` to wait for API responses
+- Avoid hard-coded wait times, prefer Cypress's automatic waiting
 
-### 3. 类型检查错误
+### 3. Type check errors
 ```bash
-# 运行类型检查
+# Run type check
 npx tsc --noEmit
 ```
 
 ---
 
-## 📚 参考资源
+## 📚 Reference Resources
 
-- [Cypress 官方文档](https://docs.cypress.io/)
+- [Cypress Official Documentation](https://docs.cypress.io/)
 - [Cypress Best Practices](https://docs.cypress.io/guides/references/best-practices)
 - [Page Object Model](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/)
 
 ---
 
-## 🎯 项目维护
+## 🎯 Project Maintenance
 
-- 定期清理未使用的代码
-- 保持 Page 类的选择器更新
-- 及时修复废弃的测试用例
+- Regularly clean up unused code
+- Keep Page class selectors updated
+- Fix deprecated test cases in a timely manner
