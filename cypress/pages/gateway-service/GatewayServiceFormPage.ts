@@ -11,6 +11,18 @@ export class GatewayServiceFormPage extends BasePage {
     fullUrlInput: '[data-testid="gateway-service-url-input"]',
     nameInput: '[data-testid="gateway-service-name-input"]',
     
+    // Protocol, host, port, path section
+    protocolRadio: '[data-testid="gateway-service-protocol-radio"]',
+    protocolRadioLabel: '[data-testid="gateway-service-protocol-radio-label"]',
+    protocolSelect: '[data-testid="gateway-service-protocol-select"]',
+    hostInput: '[data-testid="gateway-service-host-input"]',
+    pathInput: '[data-testid="gateway-service-path-input"]',
+    portInput: '[data-testid="gateway-service-port-input"]',
+    
+    // Validation messages for Protocol/Host/Path/Port section
+    hostErrorMessage: '.help-text:contains("Invalid host"), .help-text:contains("Host cannot be empty")',
+    pathErrorMessage: '.help-text:contains("Path must begin with")',
+    
     // Buttons
     saveButton: '[data-testid="service-create-form-submit"]',
     cancelButton: '[data-testid="service-create-form-cancel"]',
@@ -19,7 +31,7 @@ export class GatewayServiceFormPage extends BasePage {
     urlErrorMessage: '.gateway-service-url-input .help-text, .help-text:contains("URL must follow")',
     
     // Success notification
-    successNotification: '[data-testid="toast-notification"], .toast-notification',
+    successNotification: '.toaster-message',
     
     // Service detail page (after creation)
     enabledValue: '[data-testid="enabled-badge-status"]',
@@ -191,5 +203,164 @@ export class GatewayServiceFormPage extends BasePage {
   clearForm(): void {
     cy.get(this.selectors.fullUrlInput).clear();
     cy.get(this.selectors.nameInput).clear();
+  }
+
+   /**
+   * Click on "Full URL" radio option
+   */
+  clickFullUrlRadio(): void {
+    cy.get(this.selectors.fullUrlRadio).check();
+  }
+
+  /**
+   * Click on "Protocol, host, port, and path" radio option
+   */
+  clickProtocolRadio(): void {
+    cy.get(this.selectors.protocolRadio).check();
+  }
+
+  /**
+   * Select protocol from dropdown
+   */
+  selectProtocol(protocol: string): void {
+    cy.get(this.selectors.protocolSelect).click();
+    cy.contains('.select-item-label', protocol).click();
+  }
+
+  /**
+   * Enter host value
+   */
+  enterHost(host: string): void {
+    cy.get(this.selectors.hostInput).clear().type(host);
+  }
+
+  /**
+   * Enter path value
+   */
+  enterPath(path: string): void {
+    cy.get(this.selectors.pathInput).clear().type(path);
+  }
+
+  /**
+   * Enter port value
+   */
+   enterPort(port: number | string): void {
+    cy.get(this.selectors.portInput)
+      .focus()
+      .clear({ force: true })
+      .type('{selectall}{del}')
+      .type(String(port), { delay: 50 });
+  }
+
+  /**
+   * Submit the form using protocol, host, port, path fields
+   */
+  submitFormWithProtocolHostPortPath(
+    protocol: string,
+    host: string,
+    path: string,
+    port: number | string,
+    serviceName: string
+  ): void {
+    this.clickProtocolRadio();
+    this.selectProtocol(protocol);
+    this.enterHost(host);
+    this.enterPath(path);
+    this.enterPort(port);
+    this.enterServiceName(serviceName);
+    this.clickSave();
+  }
+
+  /**
+   * Verify service detail page shows correct protocol, host, path, port
+   */
+  verifyServiceEndpointOnDetailPage(
+    protocol: string,
+    host: string,
+    path: string,
+    port: number | string
+  ): void {
+    cy.contains(protocol).should('be.visible');
+    cy.contains(host).should('be.visible');
+    cy.contains(path).should('be.visible');
+    cy.contains(String(port)).should('be.visible');
+  }
+
+  /**
+   * Clear Protocol/Host/Path/Port form fields
+   */
+  clearProtocolHostPathPortForm(): void {
+    cy.get(this.selectors.hostInput).clear();
+    cy.get(this.selectors.pathInput).clear();
+    cy.get(this.selectors.portInput).clear();
+  }
+
+  /**
+   * Verify Host validation error is shown (contains /)
+   */
+  verifyHostValidationError(): void {
+    cy.get('.help-text')
+      .should('be.visible')
+      .and('contain', 'Invalid host');
+  }
+
+  /**
+   * Verify Path validation error is shown (doesn't start with /)
+   */
+  verifyPathValidationError(): void {
+    cy.get('.help-text')
+      .should('be.visible')
+      .and('contain', 'Path must begin with /');
+  }
+
+  /**
+   * Verify Protocol and Host are required fields
+   */
+  verifyProtocolHostRequiredFields(): void {
+    // Check Protocol dropdown is required
+    cy.get(this.selectors.protocolSelect).should('have.attr', 'required');
+    // Check Host input is required
+    cy.get(this.selectors.hostInput).should('have.attr', 'required');
+  }
+
+  /**
+   * Get the default service name from the input field
+   * Returns the auto-generated name like "new-service-20260324132019576"
+   */
+  getDefaultServiceName(): Cypress.Chainable<string> {
+    return cy.get(this.selectors.nameInput).invoke('val').then((value) => {
+      return value as string;
+    });
+  }
+
+  /**
+   * Submit the form with Full URL using default service name
+   */
+  submitFormWithFullUrlAndDefaultName(fullUrl: string): Cypress.Chainable<string> {
+    return this.getDefaultServiceName().then((defaultName) => {
+      this.enterFullUrl(fullUrl);
+      this.clickSave();
+      return cy.wrap(defaultName);
+    });
+  }
+
+  /**
+   * Submit the form using protocol, host, port, path with default service name
+   */
+  submitFormWithProtocolHostPortPathAndDefaultName(
+    protocol: string,
+    host: string,
+    path: string,
+    port: number | string
+  ): Cypress.Chainable<string> {
+    return this.getDefaultServiceName().then((defaultName) => {
+      this.clickProtocolRadio();
+      this.selectProtocol(protocol);
+      this.enterHost(host);
+      this.enterPath(path);
+      this.enterPort(port);
+      this.clickSave();
+      return cy.wrap(defaultName);
+    });
   }
 }

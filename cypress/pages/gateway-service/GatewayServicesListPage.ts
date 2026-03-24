@@ -13,7 +13,7 @@ export class GatewayServicesListPage extends BasePage {
     serviceNameLink: '[data-testid*="name"] a, .service-name-link',
     
     // New service button
-    newGatewayServiceButton: 'button:contains("New gateway service"), [data-testid="new-gateway-service-btn"]',
+    newGatewayServiceButton: '[data-testid="toolbar-add-gateway-service"]',
   };
 
   constructor() {
@@ -81,6 +81,13 @@ export class GatewayServicesListPage extends BasePage {
    * Click New gateway service button
    */
   clickNewGatewayService(): void {
-    cy.contains('button', 'New gateway service').click();
+    cy.get(this.selectors.newGatewayServiceButton).click();
+  }
+
+  /**
+   * Click New Gateway Service button (alias method)
+   */
+  clickNewGatewayServiceButton(): void {
+    this.clickNewGatewayService();
   }
 }
