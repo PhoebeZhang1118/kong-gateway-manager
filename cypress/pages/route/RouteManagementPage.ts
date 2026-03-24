@@ -97,6 +97,6 @@ export class RouteManagementPage extends BasePage {
    * Verify route exists in the list
    */
   verifyRouteExists(routeName: string): void {
-    cy.get(`[data-testid="${routeName}"]`).should('be.visible');
+    cy.get(`[data-testid="${routeName}"]`).scrollIntoView().should('be.visible');
   }
 }

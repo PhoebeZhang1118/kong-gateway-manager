@@ -13,6 +13,7 @@ describe('Route Creation', () => {
   const routeManagement = new RouteManagementPage();
   const createRoutePage = new CreateRoutePage();
 
+  // Shared setup: navigate to Gateway Services list
   beforeEach(() => {
     workspacesPage.navigateToWorkspaces();
     workspacesPage.clickDefaultRow();
@@ -20,95 +21,96 @@ describe('Route Creation', () => {
     gatewayServicesList.navigateToGatewayServices();
     gatewayServicesList.verifyOnGatewayServicesPage();
     cy.wait(500);
-    
-    // Navigate to an enabled service's Routes tab
-    gatewayServicesList.hasEnabledService().then((hasEnabled) => {
-      if (hasEnabled) {
-        gatewayServicesList.clickFirstEnabledService();
-        cy.contains('Enabled').should('be.visible');
-        routeManagement.clickRoutesTab();
-        routeManagement.verifyOnRoutesSection();
-        routeManagement.clickNewRouteButton();
-        createRoutePage.verifyOnCreateRoutePage();
-      } else {
-        cy.log('No enabled services found');
-      }
-    });
-  });
-
-  describe('Configuration Type Selection', () => {
-    it.skip('should select Basic configuration by default', () => {
-      createRoutePage.verifyBasicSelected();
-    });
-
-    it.skip('should switch between Basic and Advanced configuration', () => {
-      // Switch to Advanced
-      createRoutePage.selectAdvancedConfiguration();
-      createRoutePage.verifyAdvancedSelected();
-
-      // Switch back to Basic
-      createRoutePage.selectBasicConfiguration();
-      createRoutePage.verifyBasicSelected();
-    });
-  });
-
-  describe('Validation Scenarios', () => {
-    it('should disable Save button when form is incomplete', () => {
-      createRoutePage.clearForm();
-      createRoutePage.isSaveButtonDisabled().should('be.true');
-    });
   });
 
   describe('Duplicate Route Name Validation', () => {
-    it('should show error when creating route with duplicate name', () => {
-      // Navigate to service with existing routes
-      workspacesPage.navigateToWorkspaces();
-      workspacesPage.clickDefaultRow();
-      gatewayServicesList.navigateToGatewayServices();
-      gatewayServicesList.verifyOnGatewayServicesPage();
-      
-      // Navigate to an enabled service's Routes tab
+    beforeEach(() => {
+      // Navigate to an enabled service's Routes tab (without clicking New route)
       gatewayServicesList.hasEnabledService().then((hasEnabled) => {
         if (hasEnabled) {
           gatewayServicesList.clickFirstEnabledService();
+          cy.contains('Enabled').should('be.visible');
           routeManagement.clickRoutesTab();
           routeManagement.verifyOnRoutesSection();
-          
-          // Check if there are existing routes
-          routeManagement.isRouteListEmpty().then((isEmpty) => {
-            if (!isEmpty) {
-              // Get the first existing route name
-              routeManagement.getFirstRouteName().then((existingRouteName) => {
-                cy.log(`Found existing route: ${existingRouteName}`);
-                
-                // Click New route button
-                routeManagement.clickNewRouteButton();
-                createRoutePage.verifyOnCreateRoutePage();
-                
-                // Enter the existing route name (duplicate)
-                createRoutePage.enterRouteName(existingRouteName);
-                
-                // Enter method and path
-                createRoutePage.selectMethods(['GET']);
-                createRoutePage.enterPaths('/api');
-                
-                // Click Save
-                createRoutePage.clickSave();
-                
-                // Verify error message for duplicate route name
-                createRoutePage.verifyDuplicateRouteNameError(existingRouteName);
-                cy.log('✓ Duplicate route name error verified');
-              });
-            } else {
-              cy.log('No existing routes found, skipping duplicate name test');
-            }
-          });
+          // Note: Not clicking New route button here, will do it after getting existing route name
         } else {
           cy.log('No enabled services found');
         }
       });
     });
+
+    it('should show error when creating route with duplicate name', () => {
+      // Check if there are existing routes
+      routeManagement.isRouteListEmpty().then((isEmpty) => {
+        if (!isEmpty) {
+          // Get the first existing route name
+          routeManagement.getFirstRouteName().then((existingRouteName) => {
+            cy.log(`Found existing route: ${existingRouteName}`);
+            
+            // Click New route button
+            routeManagement.clickNewRouteButton();
+            createRoutePage.verifyOnCreateRoutePage();
+            
+            // Enter the existing route name (duplicate)
+            createRoutePage.enterRouteName(existingRouteName);
+            
+            // Enter method and path
+            createRoutePage.selectMethods(['GET']);
+            createRoutePage.enterPaths('/api');
+            
+            // Click Save
+            createRoutePage.clickSave();
+            
+            // Verify error message for duplicate route name
+            createRoutePage.verifyDuplicateRouteNameError(existingRouteName);
+            cy.log('✓ Duplicate route name error verified');
+          });
+        } else {
+          cy.log('No existing routes found, skipping duplicate name test');
+        }
+      });
+    });
   });
+
+  describe('Create Route Form Tests', () => {
+    beforeEach(() => {
+      // Navigate to an enabled service's Routes tab and click New route
+      gatewayServicesList.hasEnabledService().then((hasEnabled) => {
+        if (hasEnabled) {
+          gatewayServicesList.clickFirstEnabledService();
+          cy.contains('Enabled').should('be.visible');
+          routeManagement.clickRoutesTab();
+          routeManagement.verifyOnRoutesSection();
+          routeManagement.clickNewRouteButton();
+          createRoutePage.verifyOnCreateRoutePage();
+        } else {
+          cy.log('No enabled services found');
+        }
+      });
+    });
+
+    describe('Configuration Type Selection', () => {
+      it.skip('should select Basic configuration by default', () => {
+        createRoutePage.verifyBasicSelected();
+      });
+
+      it.skip('should switch between Basic and Advanced configuration', () => {
+        // Switch to Advanced
+        createRoutePage.selectAdvancedConfiguration();
+        createRoutePage.verifyAdvancedSelected();
+
+        // Switch back to Basic
+        createRoutePage.selectBasicConfiguration();
+        createRoutePage.verifyBasicSelected();
+      });
+    });
+
+    describe('Validation Scenarios', () => {
+      it('should disable Save button when form is incomplete', () => {
+        createRoutePage.clearForm();
+        createRoutePage.isSaveButtonDisabled().should('be.true');
+      });
+    });
 
   describe('Happy Path - Create Route with Basic Configuration', () => {
     it('should successfully create a route using Basic configuration', () => {
@@ -223,4 +225,5 @@ describe('Route Creation', () => {
       cy.get('[data-testid="service-routes"]').should('have.class', 'vtab-nav-item-active');
     });
   });
-});
+  }); // Close 'Create Route Form Tests'
+}); // Close 'Route Creation'
