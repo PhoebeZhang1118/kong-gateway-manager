@@ -10,7 +10,9 @@
     "cypress": "^15.12.0"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "test": "cypress run"
   },
   "keywords": [],
   "author": "",
